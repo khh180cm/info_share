@@ -64,7 +64,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Profile(models.Model):
     '''Personal user profile'''
     image = models.ImageField(blank=True)
-    bio = models.TextField()
+    bio = models.TextField(blank=True, default='')
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
