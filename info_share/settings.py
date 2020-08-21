@@ -33,15 +33,23 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    # Django Apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Third-party APPS
     'rest_framework',
+    'rest_framework.authtoken',
     'django_extensions',
+
+    # Local APPS
     'user',
+    'topic',
+    'comment',
 ]
 
 MIDDLEWARE = [
@@ -119,3 +127,9 @@ USE_TZ = False
 STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'user.User'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}

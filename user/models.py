@@ -45,7 +45,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     created_at = models.DateTimeField(auto_now_add=True)
     profile = models.OneToOneField(
             'Profile',
-            on_delete=models.CASCADE
+            on_delete=models.CASCADE,
+            null=True
+    )
+    comment = models.ManyToManyField(
+        'comment.Comment',
+        through='comment.UserComment'
     )
 
     objects = UserManager()
