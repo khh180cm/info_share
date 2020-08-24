@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, \
                                        PermissionsMixin
 
+from django.conf import settings
+
 
 class UserManager(BaseUserManager):
     '''
@@ -69,3 +71,15 @@ class Profile(models.Model):
 
     class Meta:
         db_table = 'profiles'
+
+
+class Address(models.Model):
+    '''User's addresses(one to many relationship)'''
+    name = models.CharField(max_length=255, blank=True)
+    is_default = models.BooleanField(default=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'addressees'

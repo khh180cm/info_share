@@ -16,4 +16,6 @@ urlpatterns = [
         jwt_views.TokenRefreshView.as_view(),
         name='token_refresh'
     ),
+    path('address/search/', views.AddressSearch.as_view(),
+        name='address-search'),
 ]
