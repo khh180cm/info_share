@@ -1,13 +1,17 @@
 import hgtk
 
 from rest_framework import generics
-from rest_framework.views import APIView
+from rest_framework import viewsets, mixins
+from rest_framework import views
 from rest_framework.response import Response
-from topic.models import Brand
-from topic.serializers import BrandSerializer
+from rest_framework import filters
+
+from topic.models import Brand, SellCategory
+from topic.serializers import BrandSerializer, SellCategorySerializer
 from django.db.models import Q
 
 
+# Helper function
 def get_brand_name(number):
     '''
     return a brand if number is given (not brand name)
@@ -27,7 +31,7 @@ def get_brand_name(number):
     return brand_name
 
 
-class BrandSearch(APIView):
+class BrandSearch(views.APIView):
     '''Return Topic objects for list'''
     def get(self, request):
         brand_name = request.query_params['brand_name']
@@ -44,6 +48,22 @@ class BrandSearch(APIView):
 
         serializer = BrandSerializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class CategorySearch(viewsets.ReadOnlyModelViewSet):
+    '''Return categories based on a brand name'''
+    queryset = SellCategory.objects.all()
+    serializer_class = SellCategorySerializer
+
+    def get_queryset(self):
+        brand_name = self.request.query_params.get('brand_name')
+        queryset = self.queryset
+        if brand_name:
+            brand_id = Brand.objects.get(eng_name=brand_name).id
+            queryset = queryset.prefetch_related('eng_name').filter(
+                brand__id=brand_id)
+        return queryset
+
 
 class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
     '''Retrieve, update, delete the topic'''

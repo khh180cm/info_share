@@ -1,8 +1,34 @@
+from django.conf import settings
+from model_utils.models import TimeStampedModel
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, \
                                        PermissionsMixin
+from django.utils.translation import ugettext_lazy as _
 
-from django.conf import settings
+class UserLoginLog(TimeStampedModel):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        verbose_name=_('사용자'),
+        related_name='login_logs',
+        blank=True,
+        null=True
+    )
+    ip_address = models.GenericIPAddressField(
+        verbose_name=_('IP Address')
+    )
+    user_agent = models.CharField(
+        verbose_name=_('HTTP User Agent'),
+        max_length=300,
+    )
+
+    class Meta:
+        verbose_name = _('user login log')
+        verbose_name_plural =_('user login logs')
+        ordering = ('-created',)
+
+    def __str__(self):
+        return '%s %s' % (self.user, self.ip_address)
 
 
 class UserManager(BaseUserManager):
@@ -39,11 +65,11 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     '''Custom user model that supports email rather than username'''
     email = models.EmailField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
+#    name = models.CharField(max_length=255)
     gender = models.CharField(max_length=255, blank=True, default='')
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    phone_number = models.CharField(max_length=255)
+#    phone_number = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     profile = models.OneToOneField(
             'Profile',

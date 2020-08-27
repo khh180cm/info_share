@@ -1,12 +1,15 @@
 import requests
 
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.throttling import UserRateThrottle
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+#from django.views improt View
 
 from user.models import User, Profile
 from info_share.my_settings import ADDRESS_KEY
+from user.signals import sig_user_logged_in
 
 
 JUSO_OPEN_API = "http://www.juso.go.kr/addrlink/addrLinkApi.do"
@@ -17,7 +20,6 @@ def call_juso_api(address, address_type, page, start, end):
     '''
     1. Description: Return addresses(json type)
     2. 관련 링크: http://www.juso.go.kr/    '''
-
     res = requests.get(
         JUSO_OPEN_API,
         params={
@@ -30,7 +32,6 @@ def call_juso_api(address, address_type, page, start, end):
     )
     raw_addresses = res.json()
     parsed_addresses = raw_addresses["results"]["juso"]
-
     address_result = [
         {
             "road_address": address["roadAddrPart1"],
@@ -40,7 +41,6 @@ def call_juso_api(address, address_type, page, start, end):
             if "서울" in address["jibunAddr"]
     ]
     total_number = len(address_result)
-
     address_info = {}
     address_info["total_number"] = total_number
     address_info["address_type"] = address_type
@@ -73,10 +73,11 @@ def get_url_params(request, start=0, end=PAGE_PER_DATA):
 
 class HelloView(APIView):
     '''Test the REST API'''
-    permission_classes = (IsAuthenticated,)
+    #permission_classes = (IsAuthenticated,)
+    throttle_classes = [UserRateThrottle]
 
-    def get(self, request):
-        content = {'message': 'Hello, world'}
+    def get(self, request, format=None):
+        content = {'message': 'request was permitted'}
         return Response(content)
 
 
@@ -85,6 +86,10 @@ class AddressSearch(APIView):
     def get(self, request):
         address, address_type, page, \
         start, end = get_url_params(request)
+        request.user = User.objects.get(id=1)
+
+        # 유저 로그 확인
+        sig_user_logged_in(request)
         try:
             address_info = call_juso_api(address, address_type, page, start, end)
             return Response(address_info, status=status.HTTP_200_OK)
